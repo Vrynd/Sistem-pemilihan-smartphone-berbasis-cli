@@ -19,9 +19,9 @@ def criteria_menu(data_manager, criteria_list):
         clear_screen()
         print_header("KELOLA KRITERIA & BOBOT")
         print()
-        print_menu_item(1, "Lihat Kriteria & Bobot")
-        print_menu_item(2, "Ubah Bobot Kriteria")
-        print_menu_item(0, "Kembali ke Menu Utama")
+        print_menu_item(1, "Lihat")
+        print_menu_item(2, "Ubah")
+        print_menu_item(0, "Kembali")
 
         choice = input_choice()
 

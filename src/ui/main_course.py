@@ -46,9 +46,9 @@ def run_app():
 
         print_menu_item(1, "Kelola Data Smartphone")
         print_menu_item(2, "Kelola Kriteria & Bobot")
-        print_menu_item(3, "Proses Perhitungan SAW")
-        print_menu_item(4, "Muat Data Default (Jurnal)")
-        print_menu_item(5, "Reset Semua Data")
+        print_menu_item(3, "Proses Perhitungan")
+        print_menu_item(4, "Muat Data")
+        print_menu_item(5, "Reset Data")
         print_menu_item(0, "Keluar")
 
         choice = input_choice()
@@ -76,7 +76,7 @@ def run_app():
             clear_screen()
             print_header("TERIMA KASIH")
             print_info("Terima kasih telah menggunakan Sistem Pemilihan Smartphone!")
-            print_info("Sampai jumpa! 👋")
+            print_info("Sampai jumpa!")
             print()
             break
 
@@ -118,16 +118,15 @@ def _load_default(data_manager, smartphones, criteria_list):
 def _reset_data(data_manager):
     clear_screen()
     print_header("RESET SEMUA DATA")
-    print_warning("Semua data smartphone dan kriteria akan direset ke data default jurnal.")
+    print_warning("Semua data smartphone dan kriteria akan DIHAPUS.")
 
-    if confirm("Apakah Anda yakin ingin mereset semua data?"):
-        criteria_list, smartphones = data_manager.reset_to_default()
-        print_success("Semua data berhasil direset ke default!")
-        print_info(f"  → {len(smartphones)} smartphone")
-        print_info(f"  → {len(criteria_list)} kriteria")
+    if confirm("Apakah Anda yakin ingin menghapus semua data?"):
+        data_manager.clear_all_data()
+        print_success("Semua data berhasil dihapus!")
         pause()
-        return criteria_list, smartphones
+        return [], []
     else:
         print_info("Reset dibatalkan.")
         pause()
         return None
+

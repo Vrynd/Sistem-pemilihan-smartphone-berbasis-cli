@@ -72,6 +72,13 @@ class DataManager:
         with open(filepath, "r", encoding="utf-8") as f:
             return json.load(f)
 
+    # Delete all saved data files
+    def clear_all_data(self):
+        if os.path.exists(SMARTPHONES_FILE):
+            os.remove(SMARTPHONES_FILE)
+        if os.path.exists(KRITERIA_FILE):
+            os.remove(KRITERIA_FILE)
+
     # Check if smartphone and criteria data files exist
     def is_data_available(self) -> bool:
         return (

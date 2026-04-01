@@ -23,11 +23,11 @@ def smartphone_menu(data_manager, smartphones, criteria_list):
         clear_screen()
         print_header("KELOLA DATA SMARTPHONE")
         print()
-        print_menu_item(1, "Lihat Semua Smartphone")
-        print_menu_item(2, "Tambah Smartphone Baru")
-        print_menu_item(3, "Edit Smartphone")
-        print_menu_item(4, "Hapus Smartphone")
-        print_menu_item(0, "Kembali ke Menu Utama")
+        print_menu_item(1, "Lihat")
+        print_menu_item(2, "Tambah")
+        print_menu_item(3, "Edit")
+        print_menu_item(4, "Hapus")
+        print_menu_item(0, "Kembali")
 
         choice = input_choice()
 
@@ -48,18 +48,11 @@ def smartphone_menu(data_manager, smartphones, criteria_list):
     return smartphones
 
 
-def _show_smartphones(smartphones, criteria_list):
-    clear_screen()
-    print_header("DATA SMARTPHONE")
-
-    if not smartphones:
-        print_warning("Belum ada data smartphone. Silakan tambah data atau muat data default.")
-        pause()
-        return
-
+def _show_smartphone_table(smartphones, criteria_list):
+    # Build headers: No, Kode, Nama, C1 (Harga), C2 (RAM), ...
     headers = ["No", "Kode", "Nama Smartphone"]
     for cr in criteria_list:
-        headers.append(f"{cr.kode}\n({cr.nama})")
+        headers.append(f"{cr.kode} ({cr.nama})")
 
     rows = []
     for i, sp in enumerate(smartphones, start=1):
@@ -70,6 +63,29 @@ def _show_smartphones(smartphones, criteria_list):
 
     print()
     print_table(headers, rows)
+
+
+def _show_smartphone_list(smartphones):
+    # Show numbered list for selection
+    headers = ["No", "Kode", "Nama Smartphone"]
+    rows = []
+    for i, sp in enumerate(smartphones, start=1):
+        rows.append([i, sp.kode, sp.nama])
+
+    print()
+    print_table(headers, rows)
+
+
+def _show_smartphones(smartphones, criteria_list):
+    clear_screen()
+    print_header("DATA SMARTPHONE")
+
+    if not smartphones:
+        print_warning("Belum ada data smartphone. Silakan tambah data atau muat data default.")
+        pause()
+        return
+
+    _show_smartphone_table(smartphones, criteria_list)
     print_info(f"Total: {len(smartphones)} smartphone")
     pause()
 
@@ -94,11 +110,12 @@ def _add_smartphone(data_manager, smartphones, criteria_list):
     new_code = f"A{last_code + 1}"
 
     print_info(f"Kode smartphone: {new_code}")
+    print_info("Ketik 0 untuk membatalkan.")
     print()
 
     name = input_text("Nama Smartphone")
-    if not name:
-        print_error("Nama tidak boleh kosong!")
+    if not name or name == "0":
+        print_info("Penambahan dibatalkan.")
         pause()
         return smartphones
 
@@ -146,12 +163,18 @@ def _edit_smartphone(data_manager, smartphones, criteria_list):
         pause()
         return smartphones
 
-    print()
-    for i, sp in enumerate(smartphones, start=1):
-        print(f"  {i}. {sp.kode} - {sp.nama}")
+    _show_smartphone_list(smartphones)
+    print_info("Masukkan 0 untuk membatalkan.")
 
     print()
-    idx = input_number("Pilih nomor smartphone yang ingin diedit", min_val=1, max_val=len(smartphones))
+    idx = input_number("Pilih nomor smartphone yang ingin diedit", min_val=0, max_val=len(smartphones))
+
+    # Cancel if 0
+    if idx == 0:
+        print_info("Edit dibatalkan.")
+        pause()
+        return smartphones
+
     sp = smartphones[idx - 1]
 
     print_info(f"Mengedit: {sp.kode} - {sp.nama}")
@@ -180,8 +203,14 @@ def _edit_smartphone(data_manager, smartphones, criteria_list):
         except ValueError:
             print_warning("Input tidak valid, nilai tidak diubah.")
 
-    data_manager.save_smartphones(smartphones)
-    print_success(f"Smartphone '{sp.nama}' berhasil diperbarui!")
+    if confirm("Simpan perubahan?"):
+        data_manager.save_smartphones(smartphones)
+        print_success(f"Smartphone '{sp.nama}' berhasil diperbarui!")
+    else:
+        # Reload original data to discard changes
+        smartphones = data_manager.load_smartphones()
+        print_info("Perubahan dibatalkan.")
+
     pause()
     return smartphones
 
@@ -195,12 +224,18 @@ def _delete_smartphone(data_manager, smartphones):
         pause()
         return smartphones
 
-    print()
-    for i, sp in enumerate(smartphones, start=1):
-        print(f"  {i}. {sp.kode} - {sp.nama}")
+    _show_smartphone_list(smartphones)
+    print_info("Masukkan 0 untuk membatalkan.")
 
     print()
-    idx = input_number("Pilih nomor smartphone yang ingin dihapus", min_val=1, max_val=len(smartphones))
+    idx = input_number("Pilih nomor smartphone yang ingin dihapus", min_val=0, max_val=len(smartphones))
+
+    # Cancel if 0
+    if idx == 0:
+        print_info("Penghapusan dibatalkan.")
+        pause()
+        return smartphones
+
     sp = smartphones[idx - 1]
 
     if confirm(f"Hapus '{sp.nama}' ({sp.kode})?"):

@@ -18,11 +18,11 @@ def calculation_menu(smartphones, criteria_list):
         clear_screen()
         print_header("PERHITUNGAN METODE SAW")
         print()
-        print_menu_item(1, "Tampilkan Matriks Keputusan")
-        print_menu_item(2, "Tampilkan Matriks Normalisasi")
-        print_menu_item(3, "Tampilkan Hasil Perhitungan & Ranking")
-        print_menu_item(4, "Tampilkan Semua (Lengkap)")
-        print_menu_item(0, "Kembali ke Menu Utama")
+        print_menu_item(1, "Matriks Keputusan")
+        print_menu_item(2, "Matriks Normalisasi")
+        print_menu_item(3, "Hasil Perhitungan & Ranking")
+        print_menu_item(4, "Lihat Semua")
+        print_menu_item(0, "Kembali")
 
         choice = input_choice()
 
