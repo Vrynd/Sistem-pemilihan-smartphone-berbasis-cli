@@ -1,0 +1,20 @@
+{
+    "kriteria": [
+        {"kode": "C1", "nama": "Harga",          "bobot": 30, "jenis": "cost"},
+        {"kode": "C2", "nama": "RAM",             "bobot": 20, "jenis": "benefit"},
+        {"kode": "C3", "nama": "Memory Internal", "bobot": 20, "jenis": "benefit"},
+        {"kode": "C4", "nama": "Kamera",          "bobot": 15, "jenis": "benefit"},
+        {"kode": "C5", "nama": "Ukuran Layar",    "bobot": 15, "jenis": "benefit"}
+    ],
+    "smartphones": [
+        {"kode": "A1", "nama": "Samsung Galaxy V",           "nilai": {"C1": 1, "C2": 2, "C3": 1, "C4": 3, "C5": 2}},
+        {"kode": "A2", "nama": "Samsung Galaxy Grand Prime",  "nilai": {"C1": 2, "C2": 2, "C3": 2, "C4": 4, "C5": 3}},
+        {"kode": "A3", "nama": "Samsung Galaxy J7",           "nilai": {"C1": 3, "C2": 2, "C3": 3, "C4": 6, "C5": 3}},
+        {"kode": "A4", "nama": "Samsung Galaxy J1 Ace",       "nilai": {"C1": 1, "C2": 2, "C3": 2, "C4": 3, "C5": 2}},
+        {"kode": "A5", "nama": "Samsung Galaxy J5",           "nilai": {"C1": 3, "C2": 2, "C3": 2, "C4": 6, "C5": 3}},
+        {"kode": "A6", "nama": "Xiaomi Redmi 3S",             "nilai": {"C1": 2, "C2": 4, "C3": 3, "C4": 6, "C5": 3}},
+        {"kode": "A7", "nama": "Samsung Galaxy A5",           "nilai": {"C1": 4, "C2": 2, "C3": 3, "C4": 6, "C5": 3}},
+        {"kode": "A8", "nama": "Oppo F1S",                    "nilai": {"C1": 3, "C2": 4, "C3": 5, "C4": 6, "C5": 3}},
+        {"kode": "A9", "nama": "Xiaomi Redmi Note 3",         "nilai": {"C1": 2, "C2": 4, "C3": 3, "C4": 6, "C5": 3}}
+    ]
+}

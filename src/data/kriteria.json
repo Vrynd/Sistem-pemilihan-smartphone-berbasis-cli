@@ -1,0 +1,32 @@
+[
+    {
+        "kode": "C1",
+        "nama": "Harga",
+        "bobot": 30,
+        "jenis": "cost"
+    },
+    {
+        "kode": "C2",
+        "nama": "RAM",
+        "bobot": 20,
+        "jenis": "benefit"
+    },
+    {
+        "kode": "C3",
+        "nama": "Memory Internal",
+        "bobot": 20,
+        "jenis": "benefit"
+    },
+    {
+        "kode": "C4",
+        "nama": "Kamera",
+        "bobot": 15,
+        "jenis": "benefit"
+    },
+    {
+        "kode": "C5",
+        "nama": "Ukuran Layar",
+        "bobot": 15,
+        "jenis": "benefit"
+    }
+]
