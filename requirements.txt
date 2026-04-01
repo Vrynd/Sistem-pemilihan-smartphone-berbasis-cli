@@ -1,0 +1,2 @@
+# Dependencies akan ditambahkan di sini saat Anda install package
+# Gunakan: pip freeze > requirements.txt
