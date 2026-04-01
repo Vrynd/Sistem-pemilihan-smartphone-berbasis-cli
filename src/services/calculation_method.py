@@ -1,142 +1,81 @@
-"""
-Modul perhitungan metode Simple Additive Weighting (SAW).
-Berisi logika inti: normalisasi matriks dan perhitungan nilai preferensi.
-"""
-
-
-class SAWCalculator:
-    """
-    Kalkulator metode SAW (Simple Additive Weighting).
-
-    Langkah perhitungan:
-    1. Buat matriks keputusan dari data alternatif
-    2. Normalisasi matriks (cost: min/Xij, benefit: Xij/max)
-    3. Hitung nilai preferensi Vi = Σ(Wj × rij)
-    4. Ranking berdasarkan Vi tertinggi
-    """
-
-    def __init__(self, smartphones: list, kriteria_list: list):
-        """
-        Args:
-            smartphones: List objek Smartphone (alternatif)
-            kriteria_list: List objek Kriteria
-        """
+class CalculationMethod:
+    # Initialize CalculationMethod object
+    def __init__(self, smartphones: list, criteria_list: list):
         self.smartphones = smartphones
-        self.kriteria_list = kriteria_list
+        self.criteria_list = criteria_list
 
-    def buat_matriks_keputusan(self) -> list:
-        """
-        Membuat matriks keputusan (X) dari data smartphone.
-
-        Returns:
-            List of list: matriks [alternatif][kriteria]
-            Contoh: [[1, 2, 1, 3, 2], [2, 2, 2, 4, 3], ...]
-        """
-        matriks = []
+    # Create decision matrix from smartphone data
+    def create_decision_matrix(self) -> list:
+        matrix = []
         for sp in self.smartphones:
-            baris = []
-            for kr in self.kriteria_list:
-                baris.append(sp.get_nilai(kr.kode))
-            matriks.append(baris)
-        return matriks
+            row = []
+            for cr in self.criteria_list:
+                row.append(sp.get_nilai(cr.kode))
+            matrix.append(row)
+        return matrix
 
-    def normalisasi(self) -> list:
-        """
-        Melakukan normalisasi matriks keputusan.
-
-        Rumus:
-        - Cost:    rij = min(kolom j) / Xij
-        - Benefit: rij = Xij / max(kolom j)
-
-        Returns:
-            List of list: matriks ternormalisasi [alternatif][kriteria]
-        """
-        matriks = self.buat_matriks_keputusan()
-
-        if not matriks:
+    # Normalize decision matrix (cost: min/Xij, benefit: Xij/max)
+    def normalization(self) -> list:
+        matrix = self.create_decision_matrix()
+        if not matrix:
             return []
 
-        jumlah_kriteria = len(self.kriteria_list)
-        jumlah_alternatif = len(matriks)
+        num_criteria = len(self.criteria_list)
+        num_alternatives = len(matrix)
 
-        # Hitung min dan max per kolom (kriteria)
-        min_kolom = []
-        max_kolom = []
-        for j in range(jumlah_kriteria):
-            nilai_kolom = [matriks[i][j] for i in range(jumlah_alternatif)]
-            min_kolom.append(min(nilai_kolom))
-            max_kolom.append(max(nilai_kolom))
+        col_min = []
+        col_max = []
+        for j in range(num_criteria):
+            col_values = [matrix[i][j] for i in range(num_alternatives)]
+            col_min.append(min(col_values))
+            col_max.append(max(col_values))
 
-        # Normalisasi
-        matriks_normal = []
-        for i in range(jumlah_alternatif):
-            baris = []
-            for j in range(jumlah_kriteria):
-                xij = matriks[i][j]
-                jenis = self.kriteria_list[j].jenis
+        normalized = []
+        for i in range(num_alternatives):
+            row = []
+            for j in range(num_criteria):
+                xij = matrix[i][j]
+                criteria_type = self.criteria_list[j].jenis
 
-                if jenis == "cost":
-                    # Cost: min / Xij
-                    rij = min_kolom[j] / xij if xij != 0 else 0
+                if criteria_type == "cost":
+                    rij = col_min[j] / xij if xij != 0 else 0
                 else:
-                    # Benefit: Xij / max
-                    rij = xij / max_kolom[j] if max_kolom[j] != 0 else 0
+                    rij = xij / col_max[j] if col_max[j] != 0 else 0
 
-                baris.append(round(rij, 4))
-            matriks_normal.append(baris)
+                row.append(round(rij, 4))
+            normalized.append(row)
 
-        return matriks_normal
+        return normalized
 
-    def hitung_preferensi(self) -> list:
-        """
-        Menghitung nilai preferensi (Vi) untuk setiap alternatif.
-
-        Rumus: Vi = Σ(Wj × rij)
-        Di mana Wj = bobot kriteria j (dalam desimal), rij = nilai ternormalisasi
-
-        Returns:
-            List of dict: [{"kode": "A1", "nama": "...", "nilai_vi": float}, ...]
-        """
-        matriks_normal = self.normalisasi()
-
-        if not matriks_normal:
+    # Calculate preference values (Vi) for each alternative
+    def calculate_preferences(self) -> list:
+        normalized = self.normalization()
+        if not normalized:
             return []
 
-        hasil = []
+        results = []
         for i, sp in enumerate(self.smartphones):
             vi = 0
-            for j, kr in enumerate(self.kriteria_list):
-                # Bobot dalam persen, konversi ke desimal tidak diperlukan
-                # karena kita ingin hasil akhir dalam skala 100
-                wj = kr.bobot / 100.0
-                rij = matriks_normal[i][j]
+            for j, cr in enumerate(self.criteria_list):
+                wj = cr.bobot / 100.0
+                rij = normalized[i][j]
                 vi += wj * rij
 
-            # Kalikan 100 agar hasilnya dalam skala persentase
-            vi_persen = round(vi * 100, 4)
+            vi_percent = round(vi * 100, 4)
 
-            hasil.append({
+            results.append({
                 "kode": sp.kode,
                 "nama": sp.nama,
-                "nilai_vi": vi_persen,
+                "nilai_vi": vi_percent,
             })
 
-        return hasil
+        return results
 
+    # Rank alternatives by preference value (highest first)
     def ranking(self) -> list:
-        """
-        Mengurutkan alternatif berdasarkan nilai preferensi (Vi) dari tertinggi.
-
-        Returns:
-            List of dict: hasil diurutkan dari Vi tertinggi, dengan tambahan field "ranking"
-        """
-        hasil = self.hitung_preferensi()
-
-        # Urutkan dari nilai Vi tertinggi
-        hasil_sorted = sorted(hasil, key=lambda x: x["nilai_vi"], reverse=True)
-
-        # Tambahkan nomor ranking
-        for idx, item in enumerate(hasil_sorted, start=1):
+        result = self.calculate_preferences()
+        result_sorted = sorted(result, key=lambda x: x["nilai_vi"], reverse=True)
+        for idx, item in enumerate(result_sorted, start=1):
             item["ranking"] = idx
 
-        return hasil_sorted
+        return result_sorted

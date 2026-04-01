@@ -1,16 +1,11 @@
-"""
-Menu utama aplikasi Sistem Pemilihan Smartphone.
-Navigasi ke seluruh fitur: kelola smartphone, kriteria, perhitungan SAW.
-"""
-
 from src.config.settings import APP_DESCRIPTION, APP_NAME, APP_VERSION
 from src.services.manage_data import DataManager
-from src.ui.calculation_menu import menu_perhitungan
-from src.ui.criteria_menu import menu_kriteria
+from src.ui.calculation_menu import calculation_menu
+from src.ui.criteria_menu import criteria_menu
 from src.ui.helpers import (
     clear_screen,
-    input_pilihan,
-    konfirmasi,
+    confirm,
+    input_choice,
     pause,
     print_error,
     print_header,
@@ -19,29 +14,26 @@ from src.ui.helpers import (
     print_success,
     print_warning,
 )
-from src.ui.menu_smartphone import menu_smartphone
+from src.ui.menu_smartphone import smartphone_menu
 
 
-def jalankan_aplikasi():
-    """Entry point utama aplikasi. Menampilkan menu dan memproses pilihan."""
-
+def run_app():
     data_manager = DataManager()
 
-    # Muat data yang tersimpan (jika ada)
-    kriteria_list = data_manager.muat_kriteria()
-    smartphones = data_manager.muat_smartphones()
+    criteria_list = data_manager.load_criteria()
+    smartphones = data_manager.load_smartphones()
 
-    # Jika belum ada data, tawarkan muat data default
-    if not data_manager.data_tersedia():
+    # Offer to load default data if no data exists
+    if not data_manager.is_data_available():
         clear_screen()
         print_header(APP_NAME)
         print_info("Belum ada data tersimpan.")
-        if konfirmasi("Muat data default dari jurnal?"):
-            kriteria_list, smartphones = data_manager.reset_ke_default()
-            print_success(f"Data default berhasil dimuat! ({len(smartphones)} smartphone, {len(kriteria_list)} kriteria)")
+        if confirm("Muat data default dari jurnal?"):
+            criteria_list, smartphones = data_manager.reset_to_default()
+            print_success(f"Data default berhasil dimuat! ({len(smartphones)} smartphone, {len(criteria_list)} kriteria)")
             pause()
 
-    # Loop menu utama
+    # Main menu loop
     while True:
         clear_screen()
         print_header(APP_NAME)
@@ -49,8 +41,7 @@ def jalankan_aplikasi():
         print(f"  Versi: {APP_VERSION}")
         print()
 
-        # Status data
-        _tampilkan_status(smartphones, kriteria_list)
+        _show_status(smartphones, criteria_list)
         print()
 
         print_menu_item(1, "Kelola Data Smartphone")
@@ -60,29 +51,28 @@ def jalankan_aplikasi():
         print_menu_item(5, "Reset Semua Data")
         print_menu_item(0, "Keluar")
 
-        pilihan = input_pilihan()
+        choice = input_choice()
 
-        if pilihan == "1":
-            smartphones = menu_smartphone(data_manager, smartphones, kriteria_list)
+        if choice == "1":
+            smartphones = smartphone_menu(data_manager, smartphones, criteria_list)
 
-        elif pilihan == "2":
-            kriteria_list = menu_kriteria(data_manager, kriteria_list)
+        elif choice == "2":
+            criteria_list = criteria_menu(data_manager, criteria_list)
 
-        elif pilihan == "3":
-            menu_perhitungan(smartphones, kriteria_list)
+        elif choice == "3":
+            calculation_menu(smartphones, criteria_list)
 
-        elif pilihan == "4":
-            _muat_default(data_manager, smartphones, kriteria_list)
-            # Reload data setelah muat default
-            kriteria_list = data_manager.muat_kriteria()
-            smartphones = data_manager.muat_smartphones()
+        elif choice == "4":
+            _load_default(data_manager, smartphones, criteria_list)
+            criteria_list = data_manager.load_criteria()
+            smartphones = data_manager.load_smartphones()
 
-        elif pilihan == "5":
-            hasil = _reset_data(data_manager)
-            if hasil:
-                kriteria_list, smartphones = hasil
+        elif choice == "5":
+            result = _reset_data(data_manager)
+            if result:
+                criteria_list, smartphones = result
 
-        elif pilihan == "0":
+        elif choice == "0":
             clear_screen()
             print_header("TERIMA KASIH")
             print_info("Terima kasih telah menggunakan Sistem Pemilihan Smartphone!")
@@ -95,51 +85,48 @@ def jalankan_aplikasi():
             pause()
 
 
-def _tampilkan_status(smartphones, kriteria_list):
-    """Tampilkan status data saat ini."""
+def _show_status(smartphones, criteria_list):
     sp_count = len(smartphones)
-    kr_count = len(kriteria_list)
+    cr_count = len(criteria_list)
 
-    if sp_count > 0 and kr_count > 0:
+    if sp_count > 0 and cr_count > 0:
         print(f"  📱 Data Smartphone : {sp_count} smartphone")
-        print(f"  📋 Data Kriteria   : {kr_count} kriteria")
+        print(f"  📋 Data Kriteria   : {cr_count} kriteria")
     else:
         print_warning("Data belum tersedia. Silakan muat data default (menu 4).")
 
 
-def _muat_default(data_manager, smartphones, kriteria_list):
-    """Muat data default dari jurnal."""
+def _load_default(data_manager, smartphones, criteria_list):
     clear_screen()
     print_header("MUAT DATA DEFAULT")
 
-    if smartphones or kriteria_list:
+    if smartphones or criteria_list:
         print_warning("Sudah ada data tersimpan!")
         print_info("Memuat data default akan MENIMPA data yang ada.")
-        if not konfirmasi("Lanjutkan?"):
+        if not confirm("Lanjutkan?"):
             print_info("Dibatalkan.")
             pause()
             return
 
-    kriteria_list, smartphones = data_manager.reset_ke_default()
-    print_success(f"Data default berhasil dimuat!")
+    criteria_list, smartphones = data_manager.reset_to_default()
+    print_success("Data default berhasil dimuat!")
     print_info(f"  → {len(smartphones)} smartphone")
-    print_info(f"  → {len(kriteria_list)} kriteria")
+    print_info(f"  → {len(criteria_list)} kriteria")
     pause()
 
 
 def _reset_data(data_manager):
-    """Reset semua data ke data default."""
     clear_screen()
     print_header("RESET SEMUA DATA")
     print_warning("Semua data smartphone dan kriteria akan direset ke data default jurnal.")
 
-    if konfirmasi("Apakah Anda yakin ingin mereset semua data?"):
-        kriteria_list, smartphones = data_manager.reset_ke_default()
+    if confirm("Apakah Anda yakin ingin mereset semua data?"):
+        criteria_list, smartphones = data_manager.reset_to_default()
         print_success("Semua data berhasil direset ke default!")
         print_info(f"  → {len(smartphones)} smartphone")
-        print_info(f"  → {len(kriteria_list)} kriteria")
+        print_info(f"  → {len(criteria_list)} kriteria")
         pause()
-        return kriteria_list, smartphones
+        return criteria_list, smartphones
     else:
         print_info("Reset dibatalkan.")
         pause()

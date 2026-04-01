@@ -1,40 +1,24 @@
-"""
-Sub-menu manajemen data smartphone.
-CRUD: Lihat, Tambah, Edit, Hapus smartphone.
-"""
-
 from src.config.settings import SUB_KRITERIA
 from src.ui.helpers import (
     clear_screen,
-    input_angka,
-    input_pilihan,
-    input_teks,
-    konfirmasi,
+    confirm,
+    input_choice,
+    input_number,
+    input_text,
     pause,
     print_error,
-    print_garis,
     print_header,
     print_info,
     print_menu_item,
+    print_separator,
     print_success,
-    print_tabel_sederhana,
+    print_table,
     print_warning,
-    tampilkan_sub_kriteria,
+    show_sub_criteria,
 )
 
 
-def menu_smartphone(data_manager, smartphones, kriteria_list):
-    """
-    Menu utama manajemen smartphone.
-
-    Args:
-        data_manager: Objek DataManager
-        smartphones: List objek Smartphone (mutable / akan dimodifikasi)
-        kriteria_list: List objek Kriteria
-
-    Returns:
-        List smartphone yang sudah diperbarui
-    """
+def smartphone_menu(data_manager, smartphones, criteria_list):
     while True:
         clear_screen()
         print_header("KELOLA DATA SMARTPHONE")
@@ -45,17 +29,17 @@ def menu_smartphone(data_manager, smartphones, kriteria_list):
         print_menu_item(4, "Hapus Smartphone")
         print_menu_item(0, "Kembali ke Menu Utama")
 
-        pilihan = input_pilihan()
+        choice = input_choice()
 
-        if pilihan == "1":
-            _lihat_smartphones(smartphones, kriteria_list)
-        elif pilihan == "2":
-            smartphones = _tambah_smartphone(data_manager, smartphones, kriteria_list)
-        elif pilihan == "3":
-            smartphones = _edit_smartphone(data_manager, smartphones, kriteria_list)
-        elif pilihan == "4":
-            smartphones = _hapus_smartphone(data_manager, smartphones)
-        elif pilihan == "0":
+        if choice == "1":
+            _show_smartphones(smartphones, criteria_list)
+        elif choice == "2":
+            smartphones = _add_smartphone(data_manager, smartphones, criteria_list)
+        elif choice == "3":
+            smartphones = _edit_smartphone(data_manager, smartphones, criteria_list)
+        elif choice == "4":
+            smartphones = _delete_smartphone(data_manager, smartphones)
+        elif choice == "0":
             break
         else:
             print_error("Pilihan tidak valid!")
@@ -64,8 +48,7 @@ def menu_smartphone(data_manager, smartphones, kriteria_list):
     return smartphones
 
 
-def _lihat_smartphones(smartphones, kriteria_list):
-    """Tampilkan semua data smartphone dalam bentuk tabel."""
+def _show_smartphones(smartphones, criteria_list):
     clear_screen()
     print_header("DATA SMARTPHONE")
 
@@ -74,89 +57,82 @@ def _lihat_smartphones(smartphones, kriteria_list):
         pause()
         return
 
-    # Siapkan header tabel
     headers = ["No", "Kode", "Nama Smartphone"]
-    for kr in kriteria_list:
-        headers.append(f"{kr.kode}\n({kr.nama})")
+    for cr in criteria_list:
+        headers.append(f"{cr.kode}\n({cr.nama})")
 
-    # Siapkan data tabel
     rows = []
     for i, sp in enumerate(smartphones, start=1):
         row = [i, sp.kode, sp.nama]
-        for kr in kriteria_list:
-            row.append(sp.get_nilai(kr.kode))
+        for cr in criteria_list:
+            row.append(sp.get_nilai(cr.kode))
         rows.append(row)
 
     print()
-    print_tabel_sederhana(headers, rows)
+    print_table(headers, rows)
     print_info(f"Total: {len(smartphones)} smartphone")
     pause()
 
 
-def _tambah_smartphone(data_manager, smartphones, kriteria_list):
-    """Tambah smartphone baru."""
+def _add_smartphone(data_manager, smartphones, criteria_list):
     clear_screen()
     print_header("TAMBAH SMARTPHONE BARU")
 
-    if not kriteria_list:
+    if not criteria_list:
         print_error("Data kriteria belum tersedia! Silakan muat data default terlebih dahulu.")
         pause()
         return smartphones
 
-    # Generate kode otomatis
-    kode_terakhir = 0
+    # Auto-generate code
+    last_code = 0
     for sp in smartphones:
         try:
             num = int(sp.kode.replace("A", ""))
-            kode_terakhir = max(kode_terakhir, num)
+            last_code = max(last_code, num)
         except ValueError:
             pass
-    kode_baru = f"A{kode_terakhir + 1}"
+    new_code = f"A{last_code + 1}"
 
-    print_info(f"Kode smartphone: {kode_baru}")
+    print_info(f"Kode smartphone: {new_code}")
     print()
 
-    nama = input_teks("Nama Smartphone")
-    if not nama:
+    name = input_text("Nama Smartphone")
+    if not name:
         print_error("Nama tidak boleh kosong!")
         pause()
         return smartphones
 
-    # Input nilai untuk setiap kriteria
-    nilai = {}
+    values = {}
     print()
-    print_garis()
+    print_separator()
     print("  Masukkan nilai untuk setiap kriteria:")
-    print_garis()
+    print_separator()
 
-    for kr in kriteria_list:
-        print(f"\n  {kr.kode} - {kr.nama} ({kr.jenis}):")
-        tampilkan_sub_kriteria(kr.kode)
+    for cr in criteria_list:
+        print(f"\n  {cr.kode} - {cr.nama} ({cr.jenis}):")
+        show_sub_criteria(cr.kode)
 
-        sub = SUB_KRITERIA.get(kr.kode, {})
+        sub = SUB_KRITERIA.get(cr.kode, {})
         if sub:
             min_val = min(sub.keys())
             max_val = max(sub.keys())
-            v = input_angka(f"Nilai {kr.kode}", min_val=min_val, max_val=max_val)
+            v = input_number(f"Nilai {cr.kode}", min_val=min_val, max_val=max_val)
         else:
-            v = input_angka(f"Nilai {kr.kode}", min_val=1)
+            v = input_number(f"Nilai {cr.kode}", min_val=1)
 
-        nilai[kr.kode] = v
+        values[cr.kode] = v
 
-    # Buat objek smartphone baru
     from src.models.smartphone import Smartphone
-    sp_baru = Smartphone(kode=kode_baru, nama=nama, nilai=nilai)
-    smartphones.append(sp_baru)
+    new_sp = Smartphone(kode=new_code, nama=name, nilai=values)
+    smartphones.append(new_sp)
 
-    # Simpan
-    data_manager.simpan_smartphones(smartphones)
-    print_success(f"Smartphone '{nama}' ({kode_baru}) berhasil ditambahkan!")
+    data_manager.save_smartphones(smartphones)
+    print_success(f"Smartphone '{name}' ({new_code}) berhasil ditambahkan!")
     pause()
     return smartphones
 
 
-def _edit_smartphone(data_manager, smartphones, kriteria_list):
-    """Edit data smartphone yang sudah ada."""
+def _edit_smartphone(data_manager, smartphones, criteria_list):
     clear_screen()
     print_header("EDIT SMARTPHONE")
 
@@ -165,57 +141,52 @@ def _edit_smartphone(data_manager, smartphones, kriteria_list):
         pause()
         return smartphones
 
-    if not kriteria_list:
+    if not criteria_list:
         print_error("Data kriteria belum tersedia!")
         pause()
         return smartphones
 
-    # Tampilkan daftar
     print()
     for i, sp in enumerate(smartphones, start=1):
         print(f"  {i}. {sp.kode} - {sp.nama}")
 
     print()
-    idx = input_angka("Pilih nomor smartphone yang ingin diedit", min_val=1, max_val=len(smartphones))
+    idx = input_number("Pilih nomor smartphone yang ingin diedit", min_val=1, max_val=len(smartphones))
     sp = smartphones[idx - 1]
 
     print_info(f"Mengedit: {sp.kode} - {sp.nama}")
     print()
 
-    # Edit nama
-    nama_baru = input_teks(f"Nama baru (kosongkan jika tidak diubah, saat ini: {sp.nama})")
-    if nama_baru:
-        sp.nama = nama_baru
+    new_name = input_text(f"Nama baru (kosongkan jika tidak diubah, saat ini: {sp.nama})")
+    if new_name:
+        sp.nama = new_name
 
-    # Edit nilai kriteria
     print()
-    print_garis()
+    print_separator()
     print("  Edit nilai kriteria (kosongkan/0 jika tidak diubah):")
-    print_garis()
+    print_separator()
 
-    for kr in kriteria_list:
-        nilai_saat_ini = sp.get_nilai(kr.kode)
-        print(f"\n  {kr.kode} - {kr.nama} (saat ini: {nilai_saat_ini}):")
-        tampilkan_sub_kriteria(kr.kode)
+    for cr in criteria_list:
+        current_value = sp.get_nilai(cr.kode)
+        print(f"\n  {cr.kode} - {cr.nama} (saat ini: {current_value}):")
+        show_sub_criteria(cr.kode)
 
         try:
-            v_str = input(f"  Nilai baru {kr.kode} (Enter = tidak ubah): ").strip()
+            v_str = input(f"  Nilai baru {cr.kode} (Enter = tidak ubah): ").strip()
             if v_str:
                 v = int(v_str)
                 if v > 0:
-                    sp.set_nilai(kr.kode, v)
+                    sp.set_nilai(cr.kode, v)
         except ValueError:
             print_warning("Input tidak valid, nilai tidak diubah.")
 
-    # Simpan
-    data_manager.simpan_smartphones(smartphones)
+    data_manager.save_smartphones(smartphones)
     print_success(f"Smartphone '{sp.nama}' berhasil diperbarui!")
     pause()
     return smartphones
 
 
-def _hapus_smartphone(data_manager, smartphones):
-    """Hapus smartphone dari daftar."""
+def _delete_smartphone(data_manager, smartphones):
     clear_screen()
     print_header("HAPUS SMARTPHONE")
 
@@ -224,18 +195,17 @@ def _hapus_smartphone(data_manager, smartphones):
         pause()
         return smartphones
 
-    # Tampilkan daftar
     print()
     for i, sp in enumerate(smartphones, start=1):
         print(f"  {i}. {sp.kode} - {sp.nama}")
 
     print()
-    idx = input_angka("Pilih nomor smartphone yang ingin dihapus", min_val=1, max_val=len(smartphones))
+    idx = input_number("Pilih nomor smartphone yang ingin dihapus", min_val=1, max_val=len(smartphones))
     sp = smartphones[idx - 1]
 
-    if konfirmasi(f"Hapus '{sp.nama}' ({sp.kode})?"):
+    if confirm(f"Hapus '{sp.nama}' ({sp.kode})?"):
         smartphones.pop(idx - 1)
-        data_manager.simpan_smartphones(smartphones)
+        data_manager.save_smartphones(smartphones)
         print_success(f"Smartphone '{sp.nama}' berhasil dihapus!")
     else:
         print_info("Penghapusan dibatalkan.")
