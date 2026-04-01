@@ -132,13 +132,24 @@ def _show_ranking(smartphones, criteria_list):
 
     if ranking:
         best = ranking[0]
+        # Build box width dynamically based on content (min 58)
+        content_lines = [
+            "REKOMENDASI TERBAIK",
+            f"{best['nama']}",
+            f"Kode: {best['kode']} | Nilai Vi: {best['nilai_vi']:.3f}%"
+        ]
+        
+        box_padding = 4
+        max_content_len = max(len(line) for line in content_lines)
+        box_width = max(max_content_len + box_padding, 58)
+        
         print()
-        print("  ╔══════════════════════════════════════════════════════╗")
-        print("  ║                  REKOMENDASI TERBAIK                ║")
-        print("  ╠══════════════════════════════════════════════════════╣")
-        print(f"  ║  {best['nama']:<40}        ║")
-        print(f"  ║  Kode: {best['kode']}  |  Nilai Vi: {best['nilai_vi']:.3f}               ║")
-        print("  ╚══════════════════════════════════════════════════════╝")
+        print(f"  ╔{'═' * box_width}╗")
+        print(f"  ║{content_lines[0].center(box_width)}║")
+        print(f"  ╠{'═' * box_width}╣")
+        print(f"  ║  {content_lines[1].ljust(box_width - box_padding + 2)}║")
+        print(f"  ║  {content_lines[2].ljust(box_width - box_padding + 2)}║")
+        print(f"  ╚{'═' * box_width}╝")
 
     pause()
 
@@ -220,12 +231,23 @@ def _show_full_calculation(smartphones, criteria_list):
 
     if ranking:
         best = ranking[0]
+        # Build box width dynamically based on content (min 58)
+        content_lines = [
+            "REKOMENDASI TERBAIK",
+            f"{best['nama']}",
+            f"Kode: {best['kode']} | Nilai Vi: {best['nilai_vi']:.3f}%"
+        ]
+        
+        box_padding = 4
+        max_content_len = max(len(line) for line in content_lines)
+        box_width = max(max_content_len + box_padding, 58)
+        
         print()
-        print("  ╔══════════════════════════════════════════════════════╗")
-        print("  ║                  REKOMENDASI TERBAIK                ║")
-        print("  ╠══════════════════════════════════════════════════════╣")
-        print(f"  ║  {best['nama']:<40}        ║")
-        print(f"  ║  Kode: {best['kode']}  |  Nilai Vi: {best['nilai_vi']:.3f}               ║")
-        print("  ╚══════════════════════════════════════════════════════╝")
+        print(f"  ╔{'═' * box_width}╗")
+        print(f"  ║{content_lines[0].center(box_width)}║")
+        print(f"  ╠{'═' * box_width}╣")
+        print(f"  ║  {content_lines[1].ljust(box_width - box_padding + 2)}║")
+        print(f"  ║  {content_lines[2].ljust(box_width - box_padding + 2)}║")
+        print(f"  ╚{'═' * box_width}╝")
 
     pause()
