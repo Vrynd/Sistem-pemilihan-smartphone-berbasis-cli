@@ -1,5 +1,7 @@
+import datetime
 from src.config.settings import APP_DESCRIPTION, APP_NAME, APP_VERSION
 from src.services.manage_data import DataManager
+from src.services.calculation_method import CalculationMethod
 from src.ui.calculation_menu import calculation_menu
 from src.ui.criteria_menu import criteria_menu
 from src.ui.helpers import (
@@ -22,6 +24,7 @@ from src.ui.preference_menu import preference_menu
 def run_app():
     data_manager = DataManager()
     user_preference = UserPreference()
+    last_calculated_time = None
 
     criteria_list = data_manager.load_criteria()
     smartphones = data_manager.load_smartphones()
@@ -44,42 +47,30 @@ def run_app():
         print(f"  Versi: {APP_VERSION}")
         print()
 
-        _show_status(smartphones, criteria_list, user_preference)
+        _show_status(smartphones, criteria_list, user_preference, last_calculated_time)
         print()
 
-        print_menu_item(1, "Kelola Data Smartphone")
-        print_menu_item(2, "Kelola Kriteria & Bobot")
-        print_menu_item(3, "Atur Preferensi Pengguna")
-        print_menu_item(4, "Proses Perhitungan")
-        print_menu_item(5, "Muat Data")
-        print_menu_item(6, "Reset Data")
-        print_menu_item(0, "Keluar")
+        print_menu_item(1, "Proses Perhitungan")
+        print_menu_item(2, "Preferensi")
+        print_menu_item(3, "Pengaturan")
+        print_menu_item(4, "Keluar")
 
         choice = input_choice()
 
         if choice == "1":
-            smartphones = smartphone_menu(data_manager, smartphones, criteria_list)
+            calculation_menu(smartphones, criteria_list, user_preference)
+            last_calculated_time = datetime.datetime.now()
 
         elif choice == "2":
-            criteria_list = criteria_menu(data_manager, criteria_list)
+            user_preference = preference_menu(user_preference, criteria_list)
+            # Opsional: Jika user ganti preferensi, asumsi kalkulasi hangus / harus diulang
+            last_calculated_time = None
 
         elif choice == "3":
-            user_preference = preference_menu(user_preference, criteria_list)
+            smartphones, criteria_list = _data_management_menu(data_manager, smartphones, criteria_list)
+            last_calculated_time = None
 
-        elif choice == "4":
-            calculation_menu(smartphones, criteria_list, user_preference)
-
-        elif choice == "5":
-            _load_default(data_manager, smartphones, criteria_list)
-            criteria_list = data_manager.load_criteria()
-            smartphones = data_manager.load_smartphones()
-
-        elif choice == "6":
-            result = _reset_data(data_manager)
-            if result:
-                criteria_list, smartphones = result
-
-        elif choice == "0":
+        elif choice == "4" or choice == "0":
             clear_screen()
             print_header("TERIMA KASIH")
             print_info("Terima kasih telah menggunakan Sistem Pemilihan Smartphone!")
@@ -91,8 +82,41 @@ def run_app():
             print_error("Pilihan tidak valid!")
             pause()
 
+def _data_management_menu(data_manager, smartphones, criteria_list):
+    while True:
+        clear_screen()
+        print_header("PENGATURAN")
+        print()
+        print_menu_item(1, "Data Smartphone")
+        print_menu_item(2, "Kriteria & Bobot")
+        print_menu_item(3, "Muat Data")
+        print_menu_item(4, "Reset Data")
+        print_menu_item(0, "Kembali")
 
-def _show_status(smartphones, criteria_list, user_preference):
+        choice = input_choice()
+
+        if choice == "1":
+            smartphones = smartphone_menu(data_manager, smartphones, criteria_list)
+        elif choice == "2":
+            criteria_list = criteria_menu(data_manager, criteria_list)
+        elif choice == "3":
+            _load_default(data_manager, smartphones, criteria_list)
+            criteria_list = data_manager.load_criteria()
+            smartphones = data_manager.load_smartphones()
+        elif choice == "4":
+            result = _reset_data(data_manager)
+            if result:
+                criteria_list, smartphones = result
+        elif choice == "0":
+            break
+        else:
+            print_error("Pilihan tidak valid!")
+            pause()
+
+    return smartphones, criteria_list
+
+
+def _show_status(smartphones, criteria_list, user_preference, last_calculated_time):
     sp_count = len(smartphones)
     cr_count = len(criteria_list)
 
@@ -101,6 +125,37 @@ def _show_status(smartphones, criteria_list, user_preference):
         print(f"  📋 Data Kriteria   : {cr_count} kriteria")
         if user_preference.is_active:
             print(f"  🧑 Preferensi User : {user_preference}")
+            
+        # Calculate Highlights Dashboard
+        calc = CalculationMethod(smartphones, criteria_list, user_preference)
+        ranking = calc.ranking() if calc.smartphones else []
+        
+        top_name = ranking[0]['nama'] if ranking else "Tidak Tersedia"
+        
+        if calc.smartphones:
+            # C1 is Cost (1 is cheapest class)
+            termurah = min(calc.smartphones, key=lambda x: x.get_nilai("C1")).nama
+            # C2 & C3 are Benefit (RAM & Memory)
+            terkuat = max(calc.smartphones, key=lambda x: x.get_nilai("C2") + x.get_nilai("C3")).nama
+        else:
+            termurah = "Tidak Tersedia"
+            terkuat = "Tidak Tersedia"
+            
+        print()
+        print("  📊 HIGHLIGHTS DASHBOARD")
+        
+        # Tampilkan Informasi Waktu Kalkulasi
+        if last_calculated_time:
+            time_str = last_calculated_time.strftime("%d-%m-%Y %H:%M:%S")
+            print(f"  🕒 Terakhir Dihitung : {time_str}")
+            print(f"  🏆 Rekomendasi Top   : \033[93m{top_name}\033[0m")
+        else:
+            print("  🕒 Terakhir Dihitung : (Belum Pernah / Perlu Hitung Ulang)")
+            print(f"  🏆 Rekomendasi Top   : (Tunggu Kalkulasi...)")
+            
+        print(f"  💰 Harga Termurah    : {termurah}")
+        print(f"  ⚡ Performa Tertinggi: {terkuat}")
+        
     else:
         print_warning("Data belum tersedia. Silakan muat data default (menu 5).")
 

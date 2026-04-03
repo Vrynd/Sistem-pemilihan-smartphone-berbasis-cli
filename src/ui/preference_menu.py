@@ -22,11 +22,11 @@ def preference_menu(user_preference, criteria_list):
         print_separator()
         print()
         
-        print_menu_item(1, "Atur Batas Harga Maksimal")
-        print_menu_item(2, "Atur Minimal RAM")
-        print_menu_item(3, "Pilih Profil Kebutuhan (Otomatis atur bobot)")
+        print_menu_item(1, "Harga Maksimal")
+        print_menu_item(2, "Minimal RAM")
+        print_menu_item(3, "Profil Kebutuhan")
         print_menu_item(4, "Reset Preferensi")
-        print_menu_item(0, "Kembali ke Menu Utama")
+        print_menu_item(0, "Kembali")
 
         choice = input_choice()
 
