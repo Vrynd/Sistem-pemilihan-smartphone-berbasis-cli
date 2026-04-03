@@ -15,10 +15,13 @@ from src.ui.helpers import (
     print_warning,
 )
 from src.ui.menu_smartphone import smartphone_menu
+from src.models.user_preference import UserPreference
+from src.ui.preference_menu import preference_menu
 
 
 def run_app():
     data_manager = DataManager()
+    user_preference = UserPreference()
 
     criteria_list = data_manager.load_criteria()
     smartphones = data_manager.load_smartphones()
@@ -41,14 +44,15 @@ def run_app():
         print(f"  Versi: {APP_VERSION}")
         print()
 
-        _show_status(smartphones, criteria_list)
+        _show_status(smartphones, criteria_list, user_preference)
         print()
 
         print_menu_item(1, "Kelola Data Smartphone")
         print_menu_item(2, "Kelola Kriteria & Bobot")
-        print_menu_item(3, "Proses Perhitungan")
-        print_menu_item(4, "Muat Data")
-        print_menu_item(5, "Reset Data")
+        print_menu_item(3, "Atur Preferensi Pengguna")
+        print_menu_item(4, "Proses Perhitungan")
+        print_menu_item(5, "Muat Data")
+        print_menu_item(6, "Reset Data")
         print_menu_item(0, "Keluar")
 
         choice = input_choice()
@@ -60,14 +64,17 @@ def run_app():
             criteria_list = criteria_menu(data_manager, criteria_list)
 
         elif choice == "3":
-            calculation_menu(smartphones, criteria_list)
+            user_preference = preference_menu(user_preference, criteria_list)
 
         elif choice == "4":
+            calculation_menu(smartphones, criteria_list, user_preference)
+
+        elif choice == "5":
             _load_default(data_manager, smartphones, criteria_list)
             criteria_list = data_manager.load_criteria()
             smartphones = data_manager.load_smartphones()
 
-        elif choice == "5":
+        elif choice == "6":
             result = _reset_data(data_manager)
             if result:
                 criteria_list, smartphones = result
@@ -85,15 +92,17 @@ def run_app():
             pause()
 
 
-def _show_status(smartphones, criteria_list):
+def _show_status(smartphones, criteria_list, user_preference):
     sp_count = len(smartphones)
     cr_count = len(criteria_list)
 
     if sp_count > 0 and cr_count > 0:
         print(f"  📱 Data Smartphone : {sp_count} smartphone")
         print(f"  📋 Data Kriteria   : {cr_count} kriteria")
+        if user_preference.is_active:
+            print(f"  🧑 Preferensi User : {user_preference}")
     else:
-        print_warning("Data belum tersedia. Silakan muat data default (menu 4).")
+        print_warning("Data belum tersedia. Silakan muat data default (menu 5).")
 
 
 def _load_default(data_manager, smartphones, criteria_list):

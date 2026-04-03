@@ -13,11 +13,15 @@ from src.ui.helpers import (
 )
 
 
-def calculation_menu(smartphones, criteria_list):
+def calculation_menu(smartphones, criteria_list, user_preference=None):
     while True:
         clear_screen()
         print_header("PERHITUNGAN METODE SAW")
         print()
+        if user_preference and user_preference.is_active:
+            print_info(f"Preferensi Aktif: {user_preference}")
+            print()
+
         print_menu_item(1, "Matriks Keputusan")
         print_menu_item(2, "Matriks Normalisasi")
         print_menu_item(3, "Hasil Perhitungan & Ranking")
@@ -27,13 +31,13 @@ def calculation_menu(smartphones, criteria_list):
         choice = input_choice()
 
         if choice == "1":
-            _show_decision_matrix(smartphones, criteria_list)
+            _show_decision_matrix(smartphones, criteria_list, user_preference)
         elif choice == "2":
-            _show_normalized_matrix(smartphones, criteria_list)
+            _show_normalized_matrix(smartphones, criteria_list, user_preference)
         elif choice == "3":
-            _show_ranking(smartphones, criteria_list)
+            _show_ranking(smartphones, criteria_list, user_preference)
         elif choice == "4":
-            _show_full_calculation(smartphones, criteria_list)
+            _show_full_calculation(smartphones, criteria_list, user_preference)
         elif choice == "0":
             break
         else:
@@ -53,19 +57,25 @@ def _check_data(smartphones, criteria_list) -> bool:
     return True
 
 
-def _show_decision_matrix(smartphones, criteria_list):
+def _show_decision_matrix(smartphones, criteria_list, user_preference=None):
     clear_screen()
     print_header("MATRIKS KEPUTUSAN (X)")
 
     if not _check_data(smartphones, criteria_list):
         return
 
-    calc = CalculationMethod(smartphones, criteria_list)
+    calc = CalculationMethod(smartphones, criteria_list, user_preference)
+    
+    if not calc.smartphones:
+        print_warning("Tidak ada smartphone yang memenuhi kriteria preferensi Anda.")
+        pause()
+        return
+        
     matrix = calc.create_decision_matrix()
 
     headers = ["Alternatif"] + [f"{cr.kode}" for cr in criteria_list]
     rows = []
-    for i, sp in enumerate(smartphones):
+    for i, sp in enumerate(calc.smartphones):
         row = [f"{sp.kode} ({sp.nama})"]
         row.extend(matrix[i])
         rows.append(row)
@@ -80,19 +90,25 @@ def _show_decision_matrix(smartphones, criteria_list):
     pause()
 
 
-def _show_normalized_matrix(smartphones, criteria_list):
+def _show_normalized_matrix(smartphones, criteria_list, user_preference=None):
     clear_screen()
     print_header("MATRIKS NORMALISASI (R)")
 
     if not _check_data(smartphones, criteria_list):
         return
 
-    calc = CalculationMethod(smartphones, criteria_list)
+    calc = CalculationMethod(smartphones, criteria_list, user_preference)
+    
+    if not calc.smartphones:
+        print_warning("Tidak ada smartphone yang memenuhi kriteria preferensi Anda.")
+        pause()
+        return
+        
     normalized = calc.normalization()
 
     headers = ["Alternatif"] + [f"{cr.kode}" for cr in criteria_list]
     rows = []
-    for i, sp in enumerate(smartphones):
+    for i, sp in enumerate(calc.smartphones):
         row = [f"{sp.kode} ({sp.nama})"]
         row.extend([f"{val:.4f}" for val in normalized[i]])
         rows.append(row)
@@ -107,14 +123,20 @@ def _show_normalized_matrix(smartphones, criteria_list):
     pause()
 
 
-def _show_ranking(smartphones, criteria_list):
+def _show_ranking(smartphones, criteria_list, user_preference=None):
     clear_screen()
     print_header("HASIL PERHITUNGAN & RANKING")
 
     if not _check_data(smartphones, criteria_list):
         return
 
-    calc = CalculationMethod(smartphones, criteria_list)
+    calc = CalculationMethod(smartphones, criteria_list, user_preference)
+    
+    if not calc.smartphones:
+        print_warning("Tidak ada smartphone yang memenuhi kriteria preferensi Anda.")
+        pause()
+        return
+        
     ranking = calc.ranking()
 
     headers = ["Ranking", "Kode", "Nama Smartphone", "Nilai (Vi)"]
@@ -154,14 +176,19 @@ def _show_ranking(smartphones, criteria_list):
     pause()
 
 
-def _show_full_calculation(smartphones, criteria_list):
+def _show_full_calculation(smartphones, criteria_list, user_preference=None):
     clear_screen()
     print_header("PERHITUNGAN SAW LENGKAP")
 
     if not _check_data(smartphones, criteria_list):
         return
 
-    calc = CalculationMethod(smartphones, criteria_list)
+    calc = CalculationMethod(smartphones, criteria_list, user_preference)
+    
+    if not calc.smartphones:
+        print_warning("Tidak ada smartphone yang memenuhi kriteria preferensi Anda.")
+        pause()
+        return
 
     # Step 1: Criteria weights
     print_sub_header("LANGKAH 1: Bobot Kriteria (W)")
@@ -175,7 +202,7 @@ def _show_full_calculation(smartphones, criteria_list):
     print_sub_header("LANGKAH 2: Matriks Keputusan (X)")
     headers_x = ["Alternatif"] + [cr.kode for cr in criteria_list]
     rows_x = []
-    for i, sp in enumerate(smartphones):
+    for i, sp in enumerate(calc.smartphones):
         row = [f"{sp.kode}"]
         row.extend(matrix[i])
         rows_x.append(row)
@@ -187,7 +214,7 @@ def _show_full_calculation(smartphones, criteria_list):
     print_sub_header("LANGKAH 3: Matriks Normalisasi (R)")
     headers_r = ["Alternatif"] + [cr.kode for cr in criteria_list]
     rows_r = []
-    for i, sp in enumerate(smartphones):
+    for i, sp in enumerate(calc.smartphones):
         row = [f"{sp.kode}"]
         row.extend([f"{val:.4f}" for val in normalized[i]])
         rows_r.append(row)

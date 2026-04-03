@@ -171,5 +171,28 @@ class TestSmartphone(unittest.TestCase):
         self.assertEqual(sp2.nilai, sp.nilai)
 
 
+from src.models.user_preference import UserPreference
+
+class TestUserPreference(unittest.TestCase):
+    def test_price_constraint(self):
+        pref = UserPreference()
+        pref.set_price_constraint(3)  # Max level 3
+        
+        sp1 = Smartphone("A1", "Test1", {"C1": 2, "C2": 2}) # Eligible
+        sp2 = Smartphone("A2", "Test2", {"C1": 5, "C2": 2}) # Ineligible
+        
+        self.assertTrue(pref.is_eligible(sp1))
+        self.assertFalse(pref.is_eligible(sp2))
+        
+    def test_ram_constraint(self):
+        pref = UserPreference()
+        pref.set_ram_constraint(3) # Min level 3
+        
+        sp1 = Smartphone("A1", "Test1", {"C1": 2, "C2": 4}) # Eligible
+        sp2 = Smartphone("A2", "Test2", {"C1": 2, "C2": 1}) # Ineligible
+        
+        self.assertTrue(pref.is_eligible(sp1))
+        self.assertFalse(pref.is_eligible(sp2))
+
 if __name__ == "__main__":
     unittest.main()

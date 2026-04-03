@@ -59,5 +59,22 @@ SUB_KRITERIA = {
     },
 }
 
+# Template Bobot berdasarkan Profil Pengguna
+WEIGHT_TEMPLATES = {
+    "Gaming": {
+        "C1": 15, "C2": 35, "C3": 25, "C4": 10, "C5": 15
+    },
+    "Photography": {
+        "C1": 20, "C2": 15, "C3": 20, "C4": 35, "C5": 10
+    },
+    "Budget": {
+        "C1": 45, "C2": 15, "C3": 15, "C4": 15, "C5": 10
+    },
+    "Balance": {
+        "C1": 20, "C2": 20, "C3": 20, "C4": 20, "C5": 20
+    }
+}
+
 # Command Line Interface
 LEBAR_GARIS = 80
+

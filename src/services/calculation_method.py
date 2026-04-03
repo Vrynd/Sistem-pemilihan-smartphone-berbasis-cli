@@ -1,7 +1,10 @@
 class CalculationMethod:
-    # Initialize CalculationMethod object
-    def __init__(self, smartphones: list, criteria_list: list):
-        self.smartphones = smartphones
+    # Initialize CalculationMethod object and filter smartphones if preference is set
+    def __init__(self, smartphones: list, criteria_list: list, preference=None):
+        if preference and preference.is_active:
+            self.smartphones = [sp for sp in smartphones if preference.is_eligible(sp)]
+        else:
+            self.smartphones = smartphones
         self.criteria_list = criteria_list
 
     # Create decision matrix from smartphone data
