@@ -230,7 +230,7 @@ def _show_full_calculation(smartphones, criteria_list, user_preference=None):
     ranking = calc.ranking()
     preferences = calc.calculate_preferences()
 
-    for i, sp in enumerate(smartphones):
+    for i, sp in enumerate(calc.smartphones):
         detail_parts = []
         for j, cr in enumerate(criteria_list):
             wj = cr.bobot / 100.0
